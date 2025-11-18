@@ -1,0 +1,23 @@
+---
+- hosts: webservers
+  become: true
+  tasks:
+    - name: Create Dockerfile
+      copy:
+        dest: '/home/devasc/WebApp/Dockerfile'
+        content: |
+          FROM httpd:2.4-alpine
+          COPY ./index.html /usr/local/apache2/htdocs/
+          EXPOSE 80
+          CMD ["httpd-foreground"]
+        mode: '0644'
+
+    - name: Build Docker image
+      command: docker build -t website /home/devasc/WebApp/
+
+    - name: Stop existing hello container if running
+      command: docker rm -f hello
+      ignore_errors: yes
+
+    - name: Run Docker container
+      command: docker run -d -p 8080:80 --name hello website
